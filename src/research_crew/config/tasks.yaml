@@ -1,0 +1,66 @@
+infer_ticker:
+  description: >
+    Infer the stock ticker for "{topic}".
+    Return ONLY a single JSON object with exactly this shape and NO extra text:
+    {"ticker":"<UPPERCASE_TICKER|topic>"}
+  agent: ticker_collector
+  expected_output: >
+    {"ticker":"MSFT"}
+
+collect_data:
+  description: >
+    Collect up-to-date, high-signal info on "{topic} from {year}".
+    Return:
+    - 5-10 bullet facts with dates (include years) and source URLs
+    - A short paragraph on what's uncertain or conflicting
+    - A "sources" list (title, URL)
+  agent: data_collector
+  expected_output: >
+    A markdown section with "Facts", "Uncertainties", and "Sources (with links)".
+
+analyze_trends:
+  description: >
+    Call the `technical_analysis` tool for inputting ticker (default: get ticker from infer_ticker context), use '1y' for the period input.
+    Return:
+    - Price, SMA50/200, RSI, MACD, ATR, 20d volatility & momentum
+    - Bollinger (upper/lower band flags)
+    - Last 3 support & resistance levels
+    - Any identified patterns
+    - 3–5 trend bullets with confidence and rationale
+    If the tool raises "Not enough data", state that and continue with narrative analysis.
+  agent: trend_analyzer
+  context: [collect_data, infer_ticker]
+  expected_output: >
+    Markdown sections: "Technical Snapshot", "Trends", "Patterns", "Levels".
+
+draft_report:
+  description: >
+    Produce a clean, stakeholder-ready markdown report titled "{topic} — Research Brief".
+    Include sections:
+    1) Executive Summary (5-8 bullet points)
+    2) Trends & Signals (use analyze_trends)
+    3) Evidence & Sources (curated links)
+    4) Risks & Unknowns
+    Make sure links are preserved.
+  agent: report_generator
+  context: [collect_data, analyze_trends]
+  expected_output: >
+    A single markdown document.
+  output_file: "src/research_crew/output/{topic}_Research_Brief.md"
+
+synthesize_insights:
+  description: >
+    Use the inferred ticker from `infer_ticker`. Start your answer with YAML front-matter, exactly:
+    ---
+    ticker: <TICKER>
+    ---
+    Then produce the insights block:
+    - Top 5 takeaways
+    - 3 risks
+    - 3 opportunities
+    - 3 concrete next steps
+  agent: insight_synthesizer
+  context: [draft_report, infer_ticker]
+  expected_output: >
+    Markdown bullets.
+

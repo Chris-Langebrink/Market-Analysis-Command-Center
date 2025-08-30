@@ -1,0 +1,67 @@
+# 1) From your project root, create a solid .gitignore so junk never gets added
+cat > .gitignore << 'EOF'
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.build/
+dist/
+.coverage
+*.log
+
+# --- Envs & secrets ---
+.venv/
+venv/
+.env
+.env.*    # e.g., .env.local
+*.key
+*.pem
+
+# --- IDE/OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Caches ---
+.ipynb_checkpoints/
+.cache/
+.mypy_cache/
+.pytype/
+pytest_cache/
+ruff_cache/
+
+# --- Project outputs ---
+src/research_crew/output/*
+!src/research_crew/output/.gitkeep
+
+# --- UV / Poetry (keep locks if you want reproducibility) ---
+# uv produces uv.lock – KEEP it for reproducibility:
+# uv.lock
+
+# If you also use Poetry, uncomment next two:
+# poetry.lock
+# .venv-poetry/
+EOF
+
+# 2) Keep empty dirs (like output/) without committing files
+mkdir -p src/research_crew/output
+touch src/research_crew/output/.gitkeep
+
+# 3) Do NOT commit secrets: replace .env with an example file
+cp .env .env.example
+# open .env.example and replace real keys with placeholders, e.g.:
+# MODEL=gpt-4o-mini
+# OPENAI_API_KEY=your_openai_api_key
+# SERPER_API_KEY=your_serper_api_key
+
+# 4) Initialize the repo and make the first commit
+git init
+git add .
+git commit -m "Initial commit: clean layout, ignore env & caches"
+git branch -M main
+
+# 5) Push (replace URL with your repo)
+git remote add origin https://github.com/yourusername/research_crew.git
+git push -u origin main

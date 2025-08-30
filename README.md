@@ -91,8 +91,8 @@ It automates the pipeline of taking a **topic**, inferring the **ticker**, colle
 
 ### Clone the repository
 ```bash
-git clone https://github.com/yourusername/lead-generator.git
-cd lead-generator
+git clone https://github.com/Chris-Langebrink/Market-Analysis-Command-Center.git
+cd research_crew
 ```
 
 ### Set up your environment variables

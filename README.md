@@ -146,8 +146,5 @@ pip install -r requirements.txt
 streamlit run src/research_crew/main.py
 ```
 
-## 🧑‍💻 How to Use
-1. Enter a topic (e.g., **Apple Inc.**).
-2. Check **Use cache** to reuse existing reports (optional).
-3. Click **Run Research** → full pipeline executes.
-4. Download the markdown report or view the chart inline.
+## Project Brief
+For a detailed description of the problem, solution design, technical decisions, roadmap, and lessons learned, see [PROJECT_BRIEF.md].

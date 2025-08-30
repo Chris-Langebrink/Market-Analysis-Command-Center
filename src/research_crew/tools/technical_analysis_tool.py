@@ -107,7 +107,7 @@ def technical_analysis(ticker: str, period: str = "1y"):
         "identified_patterns": patterns
     }
 
-if __name__ == "__main__":
-    out = technical_analysis.func("AAPL")
-    for k, v in out.items():
-        print(k, "=>", v)
+# if __name__ == "__main__":
+#     out = technical_analysis.func("AAPL")
+#     for k, v in out.items():
+#         print(k, "=>", v)

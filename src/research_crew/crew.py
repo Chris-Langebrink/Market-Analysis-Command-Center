@@ -4,7 +4,8 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai_tools import SerperDevTool  # search tool
-from research_crew.tools.technical_analysis_tool import technical_analysis   
+from research_crew.tools.technical_analysis_tool import technical_analysis
+from research_crew.tools.fundamental_analysis_tool import fundamental_analysis
 
 
 
@@ -37,7 +38,7 @@ class ResearchCrew():
         return Agent(
             config=self.agents_config['trend_analyzer'],  # type: ignore[index]
             verbose=True,
-            tools = [technical_analysis]
+            tools = [technical_analysis,fundamental_analysis]
         )
 
     @agent

@@ -67,7 +67,7 @@ To balance **clarity, modularity, and time constraints**, I made the following d
   - **SerperDevTool** for web searching.  
 
 - **Architecture**  
-  - Modular folder structure (`src/analysis`, `src/tools`, `src/output`).  
+  - Modular folder structure (`src/research_crew/config`, `src/research_crew/tools`, `src/research_crew/output`).  
   - **Streamlit frontend** for lightweight UI and visualization.  
 
 ---

@@ -1,47 +1,62 @@
 infer_ticker:
   description: >
     Infer the stock ticker for "{topic}".
+    Also list up to 5 obvious direct competitors and their tickers when available (mark 'private' if not listed).
     Return ONLY a single JSON object with exactly this shape and NO extra text:
-    {"ticker":"<UPPERCASE_TICKER|topic>"}
+    {"ticker":"<UPPERCASE_TICKER|topic>","peers":[{"name":"<COMPETITOR_NAME>","ticker":"<TICKER|private>"}]}
   agent: ticker_collector
   expected_output: >
-    {"ticker":"MSFT"}
+    {"ticker":"MSFT","peers":[{"name":"Google","ticker":"GOOGL"},{"name":"OpenAI","ticker":"private"}]}
 
 collect_data:
   description: >
-    Collect up-to-date, high-signal info on "{topic} from {year}".
+    Collect up-to-date, high-signal info on "{topic} from {year}" with competitive context.
+    Requirements:
+    - Prefer items from the last 90 days (but include earlier if foundational) and tag each fact with YYYY-MM and source URL.
+    - Identify market size/growth (if available), adoption metrics (users/MAU/enterprise uptake), and any regulatory/antitrust items.
+    - Include a "PeerSet" subsection: 3-5 key competitors (use infer_ticker.peers; fill gaps if missing) with one-line positioning.
     Return:
-    - 5-10 bullet facts with dates (include years) and source URLs
-    - A short paragraph on what's uncertain or conflicting
-    - A "sources" list (title, URL)
+    - "Facts" (5-10 bullets, each: [date] fact — source URL + {type: PR|independent|regulatory})
+    - "Uncertainties" (short paragraph)
+    - "Sources (with links)"
+    - "PeerSet" (name, ticker/private, one-liner)
   agent: data_collector
   expected_output: >
-    A markdown section with "Facts", "Uncertainties", and "Sources (with links)".
+    A markdown section with "Facts", "Uncertainties", "Sources (with links)", and "PeerSet".
 
 analyze_trends:
   description: >
-    Call the `technical_analysis` tool for inputting ticker (default: get ticker from infer_ticker context), use '1y' for the period input.
+    Use the inferred ticker (default from infer_ticker) and the first two peers (if any).
+    Call the `technical_analysis` tool for the main ticker AND for up to 2 peers (period: '1y').
+    If available in your environment, ALSO call `fundamental_analysis` for the same set to fetch valuation/quality metrics
+    (e.g., P/E, revenue growth, margins). If a tool raises "Not enough data", note it and continue.
     Return:
-    - Price, SMA50/200, RSI, MACD, ATR, 20d volatility & momentum
-    - Bollinger (upper/lower band flags)
-    - Last 3 support & resistance levels
-    - Any identified patterns
-    - 3–5 trend bullets with confidence and rationale
-    If the tool raises "Not enough data", state that and continue with narrative analysis.
+    - Technical Snapshot (price, SMA50/200, RSI, MACD, ATR, 20d volatility & momentum, Bollinger flags)
+    - Comparative Snapshot (table with rows: Price, RSI, SMA50>200?, P/E*, Rev Growth*, Gross Margin*; cols: Topic vs Peer1 vs Peer2)
+      *Include fundamental rows only if `fundamental_analysis` data was available.
+    - Last 3 support & resistance levels (topic only)
+    - Patterns (topic only)
+    - Trends: 3-5 bullets each tagged with {impact: Low|Med|High, confidence: Low|Med|High, horizon: Short|Med|Long}
+    - Contradictions or data gaps (2-3 bullets)
   agent: trend_analyzer
   context: [collect_data, infer_ticker]
   expected_output: >
-    Markdown sections: "Technical Snapshot", "Trends", "Patterns", "Levels".
+    Markdown sections: "Technical Snapshot", "Comparative Snapshot", "Trends", "Patterns", "Levels", "Contradictions".
 
 draft_report:
   description: >
     Produce a clean, stakeholder-ready markdown report titled "{topic} — Research Brief".
     Include sections:
-    1) Executive Summary (5-8 bullet points)
-    2) Trends & Signals (use analyze_trends)
-    3) Evidence & Sources (curated links)
-    4) Risks & Unknowns
-    Make sure links are preserved.
+    1) Executive Summary (5-8 bullets, each ends with [confidence: L/M/H])
+    2) Competitive Landscape
+       - PeerSet (from collect_data)
+       - Comparative Snapshot table (from analyze_trends)
+       - 3 bullets on where {topic} leads/lags peers
+    3) KPI Snapshot (market size/growth if available; adoption signals; notable financial ratios if available)
+    4) Trends & Signals (use analyze_trends)
+    5) Evidence & Sources (curated links; keep dates)
+    6) Risks & Unknowns (tie each to a competitive implication)
+    Ensure links are preserved and dates are explicit (YYYY-MM or YYYY-MM-DD).
   agent: report_generator
   context: [collect_data, analyze_trends]
   expected_output: >
@@ -55,12 +70,12 @@ synthesize_insights:
     ticker: <TICKER>
     ---
     Then produce the insights block:
-    - Top 5 takeaways
-    - 3 risks
-    - 3 opportunities
-    - 3 concrete next steps
+    - Top 5 takeaways (each ends with [why-it-matters vs <top peer>], and [confidence: L/M/H])
+    - 3 risks (each with a measurable leading indicator to watch)
+    - 3 opportunities (each with a concrete test/experiment or partnership angle)
+    - 3 concrete next steps (at least one "counter-move" vs the strongest peer)
   agent: insight_synthesizer
   context: [draft_report, infer_ticker]
   expected_output: >
-    Markdown bullets.
+    Markdown bullets with confidence and leading indicators.
 
